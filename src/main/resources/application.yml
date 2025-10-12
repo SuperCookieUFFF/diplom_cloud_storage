@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/file_service
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  sql:
+    init:
+      mode: never
+
+app:
+  file-storage:
+    location: ./uploads
+  jwt:
+    secret: mySecretKeyForJWTTokenGenerationInFileServiceApplication2024
+    expiration: 86400000
+
+logging:
+  level:
+    com.example.fileservice: INFO
