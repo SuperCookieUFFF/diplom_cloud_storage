@@ -10,6 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 import spingcloud.diplom.dto.FileResponse;
 import spingcloud.diplom.entity.FileEntity;
 import spingcloud.diplom.entity.User;
+import spingcloud.diplom.exception.FileNotFoundException;
+import spingcloud.diplom.exception.FileStorageException;
+import spingcloud.diplom.exception.InvalidFileException;
 import spingcloud.diplom.repository.FileRepository;
 
 import javax.annotation.PostConstruct;
@@ -41,7 +44,7 @@ public class FileService {
         try {
             Files.createDirectories(this.fileStoragePath);
         } catch (IOException e) {
-            throw new RuntimeException("Could not initialize file storage", e);
+            throw new FileStorageException("Could not initialize file storage directory: " + this.fileStoragePath, e);
         }
     }
 
@@ -49,11 +52,11 @@ public class FileService {
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
 
         if (originalFilename.contains("..")) {
-            throw new RuntimeException("Filename contains invalid path sequence: " + originalFilename);
+            throw new InvalidFileException("Filename contains invalid path sequence: " + originalFilename);
         }
 
         if (file.isEmpty()) {
-            throw new RuntimeException("Failed to store empty file: " + originalFilename);
+            throw new InvalidFileException("Cannot store empty file: " + originalFilename);
         }
 
         String filename = generateFilename(originalFilename);
@@ -71,13 +74,13 @@ public class FileService {
 
             return fileRepository.save(fileEntity);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to store file: " + originalFilename, e);
+            throw new FileStorageException("Failed to store file: " + originalFilename, e);
         }
     }
 
     public Resource loadAsResource(String filename, User user) {
         FileEntity fileEntity = fileRepository.findByFilenameAndUser(filename, user)
-                .orElseThrow(() -> new RuntimeException("File not found: " + filename));
+                .orElseThrow(() -> new FileNotFoundException("File not found with filename: " + filename + " for current user"));
 
         try {
             Path filePath = this.fileStoragePath.resolve(filename).normalize();
@@ -86,10 +89,10 @@ public class FileService {
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             } else {
-                throw new RuntimeException("Could not read file: " + filename);
+                throw new FileStorageException("File exists but is not readable: " + filename);
             }
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Could not read file: " + filename, e);
+            throw new FileStorageException("Invalid file path: " + filename, e);
         }
     }
 
@@ -101,14 +104,14 @@ public class FileService {
 
     public void deleteFile(String filename, User user) {
         FileEntity fileEntity = fileRepository.findByFilenameAndUser(filename, user)
-                .orElseThrow(() -> new RuntimeException("File not found: " + filename));
+                .orElseThrow(() -> new FileNotFoundException("File not found with filename: " + filename + " for current user"));
 
         try {
             Path filePath = this.fileStoragePath.resolve(filename);
             Files.deleteIfExists(filePath);
             fileRepository.delete(fileEntity);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to delete file: " + filename, e);
+            throw new FileStorageException("Failed to delete file from storage: " + filename, e);
         }
     }
 

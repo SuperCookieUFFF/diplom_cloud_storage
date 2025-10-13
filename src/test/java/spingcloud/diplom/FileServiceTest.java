@@ -11,7 +11,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 import spingcloud.diplom.entity.User;
 import spingcloud.diplom.repository.FileRepository;
-import springcloud.diplom.service.FileService;
+import spingcloud.diplom.service.FileService;
 
 
 import static org.mockito.ArgumentMatchers.any;
