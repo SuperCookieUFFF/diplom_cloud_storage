@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/file_service
+    url: jdbc:postgresql://db:5432/file_service
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
@@ -25,13 +25,25 @@ spring:
     init:
       mode: never
 
-app:
-  file-storage:
-    location: ./uploads
-  jwt:
-    secret: mySecretKeyForJWTTokenGenerationInFileServiceApplication2024
-    expiration: 86400000
 
 logging:
   level:
-    com.example.fileservice: INFO
+    spingcloud.diplom: INFO
+    spingcloud.diplom.service: DEBUG
+    spingcloud.diplom.controller: INFO
+    spingcloud.diplom.security: DEBUG
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.apache: WARN
+  file:
+    name: logs/cloud-storage.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+app:
+  file-storage:
+    location: /app/uploads
+  jwt:
+    secret: mySecretKeyForJWTTokenGenerationInFileServiceApplication2024
+    expiration: 86400000
